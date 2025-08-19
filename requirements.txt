@@ -1,0 +1,27 @@
+# ReConZero AI-Enhanced Penetration Testing Platform
+# Core Dependencies
+Flask==2.2.5
+Werkzeug==2.2.3
+requests==2.28.2
+
+# AI/ML Dependencies (Python 3.8+ compatible)
+scikit-learn==1.2.2
+numpy==1.24.4
+pandas==1.5.3
+
+# Security Testing Libraries
+dnspython==2.3.0
+cryptography==41.0.4
+
+# Data Processing
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Development Dependencies (optional)
+pytest==7.4.0
+pytest-flask==1.2.0
+
+# Production Dependencies
+gunicorn==20.1.0
+
+# Note: concurrent-futures is built into Python 3.2+, no need to install separately

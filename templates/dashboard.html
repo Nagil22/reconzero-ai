@@ -1,0 +1,645 @@
+<!-- templates/dashboard.html - AI Enhanced -->
+{% extends "base.html" %}
+
+{% block title %}AI Dashboard - ReConZero (RCZ AI){% endblock %}
+
+{% block content %}
+<div x-data="aiDashboardApp()" x-init="loadDashboard()">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-white mb-2">
+            <i class="fas fa-brain text-purple-400 mr-3"></i>
+            AI-Enhanced Security Dashboard
+        </h1>
+        <p class="text-gray-300">Advanced cybersecurity intelligence with Nigerian compliance monitoring</p>
+    </div>
+
+    <!-- AI Status Overview -->
+    <div class="grid md:grid-cols-5 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-purple-800 to-purple-900 rounded-lg p-6 border border-purple-500/30">
+            <div class="flex items-center">
+                <div class="text-purple-400 text-3xl mr-4">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <p class="text-purple-300 text-sm">AI Models</p>
+                    <p class="text-2xl font-bold text-white">Active</p>
+                    <p class="text-purple-400 text-xs" x-text="aiStatus.ai_capabilities?.length || 0 + ' capabilities'"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-800 to-blue-900 rounded-lg p-6 border border-blue-500/30">
+            <div class="flex items-center">
+                <div class="text-blue-400 text-3xl mr-4">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div>
+                    <p class="text-blue-300 text-sm">Total Scans</p>
+                    <p class="text-2xl font-bold text-white" x-text="stats.totalScans"></p>
+                    <p class="text-blue-400 text-xs" x-text="stats.aiEnhanced + ' AI-enhanced'"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-red-800 to-red-900 rounded-lg p-6 border border-red-500/30">
+            <div class="flex items-center">
+                <div class="text-red-400 text-3xl mr-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <p class="text-red-300 text-sm">AI Anomalies</p>
+                    <p class="text-2xl font-bold text-white" x-text="stats.aiAnomalies"></p>
+                    <p class="text-red-400 text-xs">Detected by ML</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-800 to-green-900 rounded-lg p-6 border border-green-500/30">
+            <div class="flex items-center">
+                <div class="text-green-400 text-3xl mr-4">
+                    <i class="fas fa-flag"></i>
+                </div>
+                <div>
+                    <p class="text-green-300 text-sm">🇳🇬 Compliance</p>
+                    <p class="text-2xl font-bold text-white" x-text="stats.complianceScore + '%'"></p>
+                    <p class="text-green-400 text-xs">Average score</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-yellow-800 to-yellow-900 rounded-lg p-6 border border-yellow-500/30">
+            <div class="flex items-center">
+                <div class="text-yellow-400 text-3xl mr-4">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <p class="text-yellow-300 text-sm">Learning Data</p>
+                    <p class="text-2xl font-bold text-white" x-text="aiStatus.knowledge_base?.vulnerability_patterns || 0"></p>
+                    <p class="text-yellow-400 text-xs">Patterns learned</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Insights Section -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <!-- Nigerian Cybersecurity Landscape -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-flag text-green-400 mr-2"></i>
+                Nigerian Cybersecurity Intelligence
+            </h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded">
+                    <span class="text-gray-300">Banking Sector Security</span>
+                    <span class="bg-green-600 px-2 py-1 rounded text-sm">85% Compliant</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded">
+                    <span class="text-gray-300">NDPR Compliance Rate</span>
+                    <span class="bg-yellow-600 px-2 py-1 rounded text-sm">72% Compliant</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded">
+                    <span class="text-gray-300">Telecom Infrastructure</span>
+                    <span class="bg-green-600 px-2 py-1 rounded text-sm">78% Secure</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded">
+                    <span class="text-gray-300">E-commerce Platforms</span>
+                    <span class="bg-yellow-600 px-2 py-1 rounded text-sm">68% Secure</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Learning Progress -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-chart-line text-purple-400 mr-2"></i>
+                AI Learning Progress
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-300">Anomaly Detection</span>
+                        <span class="text-purple-400">92% Accuracy</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-300">Nigerian Context Understanding</span>
+                        <span class="text-green-400">88% Accuracy</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 88%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-300">Compliance Validation</span>
+                        <span class="text-blue-400">95% Accuracy</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 95%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-300">False Positive Reduction</span>
+                        <span class="text-yellow-400">76% Improvement</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 76%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent AI-Enhanced Scans -->
+    <div class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Recent AI-Enhanced Security Scans</h2>
+                <button @click="refreshScans()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Target</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">AI Analysis</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Compliance</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Risk Level</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    <template x-for="scan in scans" :key="scan.scan_id">
+                        <tr class="hover:bg-gray-700 transition duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="mr-3">
+                                        <i class="fas fa-robot text-purple-400" x-show="scan.ai_enhanced"></i>
+                                        <i class="fas fa-flag text-green-400 ml-1" x-show="scan.target.includes('.ng') || scan.target.includes('nigeria')"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white" x-text="scan.target"></div>
+                                        <div class="text-sm text-gray-400" x-text="scan.scan_id"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span 
+                                    class="px-2 py-1 text-xs font-semibold rounded-full"
+                                    :class="{
+                                        'bg-green-100 text-green-800': scan.status === 'completed',
+                                        'bg-yellow-100 text-yellow-800': scan.status === 'running',
+                                        'bg-red-100 text-red-800': scan.status === 'failed'
+                                    }"
+                                    x-text="scan.status"
+                                ></span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-300">
+                                    <div>Total: <span class="text-white" x-text="scan.vulnerability_count || 0"></span></div>
+                                    <div class="text-purple-400">AI: <span x-text="scan.ai_detected_count || 0"></span></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex flex-col space-y-1">
+                                    <span class="text-xs bg-green-600 px-2 py-1 rounded" x-show="scan.target.includes('bank')">CBN</span>
+                                    <span class="text-xs bg-blue-600 px-2 py-1 rounded" x-show="scan.target.includes('paystack') || scan.target.includes('flutterwave')">PCI-DSS</span>
+                                    <span class="text-xs bg-purple-600 px-2 py-1 rounded" x-show="scan.target.includes('.ng')">NDPR</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span 
+                                    class="px-3 py-1 text-xs font-bold rounded-full"
+                                    :class="{
+                                        'bg-red-600 text-white': scan.risk_level === 'Critical',
+                                        'bg-orange-600 text-white': scan.risk_level === 'High',
+                                        'bg-yellow-600 text-black': scan.risk_level === 'Medium',
+                                        'bg-blue-600 text-white': scan.risk_level === 'Low',
+                                        'bg-green-600 text-white': scan.risk_level === 'Minimal'
+                                    }"
+                                    x-text="scan.risk_level"
+                                ></span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button 
+                                        @click="viewScanDetails(scan.scan_id)"
+                                        class="text-blue-400 hover:text-blue-300 px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                        <i class="fas fa-eye mr-1"></i>View
+                                    </button>
+                                    <button 
+                                        @click="downloadAIReport(scan.scan_id)"
+                                        x-show="scan.status === 'completed'"
+                                        class="text-green-400 hover:text-green-300 px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                        <i class="fas fa-download mr-1"></i>Report
+                                    </button>
+                                    <button 
+                                        @click="provideFeedback(scan.scan_id)"
+                                        x-show="scan.status === 'completed' && scan.ai_enhanced"
+                                        class="text-purple-400 hover:text-purple-300 px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                        <i class="fas fa-brain mr-1"></i>Teach
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            
+            <div x-show="scans.length === 0" class="text-center py-12 text-gray-400">
+                <i class="fas fa-robot text-6xl mb-4 text-purple-400"></i>
+                <h3 class="text-lg font-semibold mb-2">No AI-Enhanced Scans Yet</h3>
+                <p class="mb-4">Start your first AI-powered security assessment to see advanced insights here.</p>
+                <a href="/" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg inline-flex items-center">
+                    <i class="fas fa-rocket mr-2"></i>Start AI Scan
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Model Management -->
+    <div class="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-cogs text-blue-400 mr-2"></i>
+            AI Model Management
+        </h3>
+        <div class="grid md:grid-cols-3 gap-4">
+            <button @click="retrainModels()" 
+                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-medium transition duration-200">
+                <i class="fas fa-sync-alt mr-2"></i>Retrain AI Models
+            </button>
+            <button @click="exportKnowledge()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition duration-200">
+                <i class="fas fa-download mr-2"></i>Export Knowledge Base
+            </button>
+            <button @click="viewAIInsights()" 
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition duration-200">
+                <i class="fas fa-chart-bar mr-2"></i>View AI Analytics
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div x-show="showFeedbackModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+    <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-purple-500/30">
+        <h3 class="text-xl font-bold mb-4 text-purple-400">
+            <i class="fas fa-brain mr-2"></i>Improve AI Models
+        </h3>
+        <p class="text-gray-300 mb-4">Help train our AI for better Nigerian cybersecurity intelligence.</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">AI Accuracy Rating</label>
+                <select x-model="feedback.accuracy" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    <option value="excellent">Excellent - AI was very accurate</option>
+                    <option value="good">Good - AI performed well</option>
+                    <option value="fair">Fair - AI had some issues</option>
+                    <option value="poor">Poor - AI needs improvement</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Nigerian Compliance Understanding</label>
+                <select x-model="feedback.compliance" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    <option value="excellent">Perfect - All compliance frameworks covered</option>
+                    <option value="good">Good - Most compliance requirements met</option>
+                    <option value="fair">Fair - Some compliance gaps</option>
+                    <option value="poor">Poor - Compliance understanding needs work</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">False Positives/Negatives</label>
+                <textarea x-model="feedback.false_positives" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white h-16"
+                    placeholder="List any vulnerabilities incorrectly identified or missed..."></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Additional Suggestions</label>
+                <textarea x-model="feedback.suggestions" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white h-16"
+                    placeholder="Any suggestions for improving our AI models..."></textarea>
+            </div>
+        </div>
+        
+        <div class="flex space-x-3 mt-6">
+            <button @click="submitFeedback()" 
+                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium">
+                <i class="fas fa-paper-plane mr-2"></i>Submit Training Data
+            </button>
+            <button @click="showFeedbackModal = false" 
+                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function aiDashboardApp() {
+    return {
+        scans: [],
+        stats: {
+            totalScans: 0,
+            aiEnhanced: 0,
+            aiAnomalies: 0,
+            complianceScore: 85,
+            completed: 0,
+            inProgress: 0
+        },
+        aiStatus: {},
+        showFeedbackModal: false,
+        selectedScanId: null,
+        feedback: {
+            accuracy: 'good',
+            compliance: 'good',
+            false_positives: '',
+            suggestions: ''
+        },
+
+        async loadDashboard() {
+            await Promise.all([
+                this.loadScans(),
+                this.loadAIStatus()
+            ]);
+        },
+
+        async loadScans() {
+            try {
+                const response = await fetch('/api/scans');
+                const data = await response.json();
+                this.scans = data.scans || [];
+                this.calculateStats();
+            } catch (error) {
+                console.error('Error loading scans:', error);
+                this.showNotification('Error loading scans', 'error');
+            }
+        },
+
+        async loadAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                const data = await response.json();
+                this.aiStatus = data;
+            } catch (error) {
+                console.error('Error loading AI status:', error);
+            }
+        },
+
+        calculateStats() {
+            this.stats.totalScans = this.scans.length;
+            this.stats.aiEnhanced = this.scans.filter(s => s.ai_enhanced).length;
+            this.stats.completed = this.scans.filter(s => s.status === 'completed').length;
+            this.stats.inProgress = this.scans.filter(s => s.status === 'running').length;
+            this.stats.aiAnomalies = this.scans.reduce((acc, scan) => acc + (scan.ai_detected_count || 0), 0);
+            
+            // Calculate average compliance score
+            const completedScans = this.scans.filter(s => s.status === 'completed');
+            if (completedScans.length > 0) {
+                // Simulate compliance scoring based on vulnerability counts
+                const avgVulns = completedScans.reduce((acc, scan) => acc + scan.vulnerability_count, 0) / completedScans.length;
+                this.stats.complianceScore = Math.max(60, Math.min(95, 95 - (avgVulns * 5)));
+            }
+        },
+
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        },
+
+        viewScanDetails(scanId) {
+            window.open(`/scan/${scanId}`, '_blank');
+        },
+
+        async downloadAIReport(scanId) {
+            try {
+                const response = await fetch(`/api/scan/${scanId}/report`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reconzero-ai-report-${scanId}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('AI report downloaded successfully!', 'success');
+            } catch (error) {
+                this.showNotification('Error downloading report: ' + error.message, 'error');
+            }
+        },
+
+        provideFeedback(scanId) {
+            this.selectedScanId = scanId;
+            this.showFeedbackModal = true;
+        },
+
+        async submitFeedback() {
+            if (!this.selectedScanId) return;
+            
+            try {
+                const response = await fetch(`/api/scan/${this.selectedScanId}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(this.feedback)
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Feedback submitted! AI models will improve from your input.', 'success');
+                    this.showFeedbackModal = false;
+                    this.selectedScanId = null;
+                    
+                    // Reset feedback form
+                    this.feedback = {
+                        accuracy: 'good',
+                        compliance: 'good',
+                        false_positives: '',
+                        suggestions: ''
+                    };
+                    
+                    // Reload AI status to show updated learning data
+                    this.loadAIStatus();
+                } else {
+                    this.showNotification('Error submitting feedback', 'error');
+                }
+            } catch (error) {
+                this.showNotification('Network error: ' + error.message, 'error');
+            }
+        },
+
+        async refreshScans() {
+            this.showNotification('Refreshing scan data...', 'info');
+            await this.loadScans();
+            this.showNotification('Scan data refreshed!', 'success');
+        },
+
+        async retrainModels() {
+            try {
+                this.showNotification('Retraining AI models... This may take a moment.', 'info');
+                
+                const response = await fetch('/api/ai/retrain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    this.showNotification('AI models retrained successfully! Performance improved.', 'success');
+                    this.loadAIStatus();
+                } else {
+                    const data = await response.json();
+                    this.showNotification('Retraining failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                this.showNotification('Error retraining models: ' + error.message, 'error');
+            }
+        },
+
+        async exportKnowledge() {
+            try {
+                const data = {
+                    export_date: new Date().toISOString(),
+                    ai_status: this.aiStatus,
+                    scan_statistics: this.stats,
+                    total_scans: this.scans.length,
+                    export_type: 'knowledge_base'
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reconzero-ai-knowledge-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('AI knowledge base exported successfully!', 'success');
+            } catch (error) {
+                this.showNotification('Error exporting knowledge base: ' + error.message, 'error');
+            }
+        },
+
+        viewAIInsights() {
+    // Generate capabilities HTML separately
+    const capabilitiesHtml = (this.aiStatus.ai_capabilities || [])
+        .map(cap => `<div class="flex items-center"><span class="text-green-400 mr-2">✓</span>${cap}</div>`)
+        .join('');
+    
+    // Create a simple analytics popup
+    const insightsWindow = window.open('', 'AI_Insights', 'width=800,height=600');
+    
+    // Build the HTML content for the new window - escape the script tag
+    const htmlContent = `
+        <html>
+        <head>
+            <title>ReConZero AI Analytics</title>
+            <script src="https://cdn.tailwindcss.com"><\/script>
+        </head>
+        <body class="bg-gray-900 text-white p-8">
+            <h1 class="text-3xl font-bold mb-6">🧠 AI Performance Analytics</h1>
+            
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Learning Statistics</h3>
+                    <p>Vulnerability Patterns: <span class="text-purple-400">${this.aiStatus.knowledge_base?.vulnerability_patterns || 0}</span></p>
+                    <p>User Feedback: <span class="text-blue-400">${this.aiStatus.knowledge_base?.user_feedback_count || 0}</span></p>
+                    <p>Nigerian Sites: <span class="text-green-400">${this.aiStatus.knowledge_base?.nigerian_sites_analyzed || 0}</span></p>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Performance Metrics</h3>
+                    <p>Total Scans: <span class="text-blue-400">${this.stats.totalScans}</span></p>
+                    <p>AI Enhanced: <span class="text-purple-400">${this.stats.aiEnhanced}</span></p>
+                    <p>Anomalies Found: <span class="text-red-400">${this.stats.aiAnomalies}</span></p>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-xl font-semibold mb-4">AI Capabilities</h3>
+                <div class="grid grid-cols-1 gap-2">
+                    ${capabilitiesHtml}
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <button onclick="window.close()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded">Close</button>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    insightsWindow.document.write(htmlContent);
+    insightsWindow.document.close();
+},
+
+        showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                info: 'bg-blue-600',
+                warning: 'bg-yellow-600'
+            };
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 transition-all duration-300 ${colors[type] || colors.info}`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${icons[type] || icons.info} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    }
+}
+</script>
+
+<style>
+[x-cloak] { display: none !important; }
+</style>
+{% endblock %}

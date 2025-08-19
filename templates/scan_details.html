@@ -1,0 +1,220 @@
+<!-- templates/scan_details.html -->
+{% extends "base.html" %}
+
+{% block title %}Scan Details - ReConZero (RCZ AI){% endblock %}
+
+{% block content %}
+<div x-data="scanDetailsApp('{{ scan_id }}')" x-init="loadScanDetails()">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Scan Details</h1>
+                <p class="text-gray-300 mt-2" x-text="'Scan ID: ' + scanId"></p>
+            </div>
+            <div>
+                <button 
+                    @click="downloadReport()"
+                    x-show="scanData?.status === 'completed'"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                >
+                    <i class="fas fa-download mr-2"></i>Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="loading" class="text-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
+        <p class="text-gray-300">Loading scan details...</p>
+    </div>
+
+    <!-- Scan Overview -->
+    <div x-show="!loading && scanData" class="space-y-8">
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Scan Overview</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <p class="text-gray-400 text-sm">Target</p>
+                    <p class="font-medium" x-text="scanData?.target"></p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">Status</p>
+                    <span 
+                        class="px-2 py-1 text-xs font-semibold rounded-full"
+                        :class="{
+                            'bg-green-100 text-green-800': scanData?.status === 'completed',
+                            'bg-yellow-100 text-yellow-800': scanData?.status === 'running',
+                            'bg-red-100 text-red-800': scanData?.status === 'failed'
+                        }"
+                        x-text="scanData?.status"
+                    ></span>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">Vulnerabilities Found</p>
+                    <p class="font-medium" x-text="(scanData?.vulnerabilities || []).length"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar (for running scans) -->
+        <div x-show="scanData?.status === 'running'" class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Scan Progress</h3>
+            <div class="w-full bg-gray-600 rounded-full h-2 mb-4">
+                <div 
+                    class="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                    :style="'width: ' + (scanData?.progress || 0) + '%'"
+                ></div>
+            </div>
+            <div class="flex justify-between text-sm text-gray-300">
+                <span x-text="scanData?.phase || 'Initializing...'"></span>
+                <span x-text="(scanData?.progress || 0) + '%'"></span>
+            </div>
+        </div>
+
+        <!-- Vulnerabilities -->
+        <div x-show="(scanData?.vulnerabilities || []).length > 0" class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-6">Vulnerability Details</h2>
+            
+            <!-- Severity Summary -->
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-red-900 bg-opacity-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-red-400" x-text="getVulnsBySeverity('High').length"></div>
+                    <div class="text-red-300">High Severity</div>
+                </div>
+                <div class="bg-yellow-900 bg-opacity-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-yellow-400" x-text="getVulnsBySeverity('Medium').length"></div>
+                    <div class="text-yellow-300">Medium Severity</div>
+                </div>
+                <div class="bg-blue-900 bg-opacity-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-400" x-text="getVulnsBySeverity('Low').length"></div>
+                    <div class="text-blue-300">Low Severity</div>
+                </div>
+            </div>
+
+            <!-- Vulnerability List -->
+            <div class="space-y-4">
+                <template x-for="vuln in (scanData?.vulnerabilities || [])" :key="vuln.id">
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg" x-text="vuln.name"></h3>
+                                <p class="text-gray-300 text-sm mt-1" x-text="vuln.description"></p>
+                            </div>
+                            <span 
+                                class="px-3 py-1 rounded-full text-sm font-bold ml-4"
+                                :class="{
+                                    'bg-red-600': vuln.severity === 'High',
+                                    'bg-yellow-600': vuln.severity === 'Medium',
+                                    'bg-blue-600': vuln.severity === 'Low'
+                                }"
+                                x-text="vuln.severity"
+                            ></span>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-400">Location:</p>
+                                <p class="font-mono text-blue-300" x-text="vuln.location"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">CVSS Score:</p>
+                                <p class="font-semibold" x-text="vuln.cvss_score"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-gray-600">
+                            <p class="text-gray-400 text-sm mb-2">Remediation:</p>
+                            <p class="text-gray-300 text-sm" x-text="vuln.remediation"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- No Vulnerabilities Found -->
+        <div x-show="scanData?.status === 'completed' && (scanData?.vulnerabilities || []).length === 0" 
+             class="bg-green-900 bg-opacity-50 rounded-lg p-6 text-center">
+            <i class="fas fa-check-circle text-4xl text-green-400 mb-4"></i>
+            <h3 class="text-lg font-semibold text-green-300 mb-2">No Vulnerabilities Found</h3>
+            <p class="text-green-200">Great! This target appears to have strong security measures in place.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function scanDetailsApp(scanId) {
+    return {
+        scanId: scanId,
+        scanData: null,
+        loading: true,
+        pollInterval: null,
+
+        async loadScanDetails() {
+            try {
+                const response = await fetch(`/api/scan/${this.scanId}/status`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.scanData = data;
+                    
+                    // Poll for updates if scan is still running
+                    if (data.status === 'running') {
+                        this.startPolling();
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        startPolling() {
+            this.pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/scan/${this.scanId}/status`);
+                    const data = await response.json();
+                    
+                    this.scanData = data;
+                    
+                    if (data.status === 'completed') {
+                        clearInterval(this.pollInterval);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 2000);
+        },
+
+        getVulnsBySeverity(severity) {
+            return (this.scanData?.vulnerabilities || []).filter(v => v.severity === severity);
+        },
+
+        async downloadReport() {
+            try {
+                const response = await fetch(`/api/scan/${this.scanId}/report`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reconzero-report-${this.scanId}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error downloading report: ' + error.message);
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

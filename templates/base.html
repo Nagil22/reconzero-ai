@@ -1,0 +1,57 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ReConZero (RCZ AI) - AI-Powered Penetration Testing{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-blue-400">
+                            <i class="fas fa-shield-alt mr-2"></i>ReConZero (RCZ AI)
+                        </h1>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Home
+                            </a>
+                            <a href="/dashboard" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="text-sm text-gray-400">
+                        NCAIR Research Demo
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 mt-12">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-400 text-sm">
+                <p>&copy; 2025 ReConZero (RCZ AI) Research Platform. Developed for NCAIR Program.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

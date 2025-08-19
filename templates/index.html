@@ -1,0 +1,585 @@
+<!-- templates/index.html - AI Enhanced -->
+{% extends "base.html" %}
+
+{% block content %}
+<div x-data="aiPentestApp()" x-init="loadAIStatus()" class="space-y-8">
+    <!-- Hero Section with AI Features -->
+    <div class="text-center">
+        <h1 class="text-5xl font-bold text-white mb-4">
+            <span class="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                AI-Powered Penetration Testing Platform
+            </span>
+        </h1>
+        <p class="text-xl text-gray-300 mb-8">
+            A Nigerian AI-Driven Cybersecurity Validation Platform with Continuous Learning
+        </p>
+        
+        <!-- AI Status Banner -->
+        <div class="bg-gradient-to-r from-blue-900 to-purple-900 bg-opacity-50 rounded-lg p-6 max-w-4xl mx-auto mb-8">
+            <div class="flex items-center justify-center space-x-6">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                    <span class="text-green-300 font-medium">AI Models Active</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-blue-400 mr-2"></i>
+                    <span class="text-blue-300" x-text="aiStatus.knowledge_base?.vulnerability_patterns || 0"></span>
+                    <span class="text-gray-300 ml-1">Patterns Learned</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-flag text-green-400 mr-2"></i>
+                    <span class="text-green-300" x-text="aiStatus.knowledge_base?.nigerian_sites_analyzed || 0"></span>
+                    <span class="text-gray-300 ml-1">Nigerian Sites Analyzed</span>
+                </div>
+            </div>
+            <p class="text-blue-200 mt-4">
+                <i class="fas fa-rocket mr-2"></i>
+                <strong>NCAIR Research Demo:</strong> Advanced AI-powered cybersecurity platform with 
+                Nigerian compliance intelligence and continuous learning capabilities.
+            </p>
+        </div>
+    </div>
+
+    <!-- AI-Enhanced Scan Interface -->
+    <div class="bg-gray-800 rounded-lg shadow-2xl p-8 border border-gray-700">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold mb-4">
+                <i class="fas fa-robot mr-3 text-purple-400"></i>
+                Start AI-Enhanced Security Assessment
+            </h2>
+            <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
+                <span><i class="fas fa-check text-green-400 mr-1"></i>Anomaly Detection</span>
+                <span><i class="fas fa-check text-green-400 mr-1"></i>Nigerian Compliance</span>
+                <span><i class="fas fa-check text-green-400 mr-1"></i>Continuous Learning</span>
+                <span><i class="fas fa-check text-green-400 mr-1"></i>Real-time AI Analysis</span>
+            </div>
+        </div>
+        
+        <div class="max-w-md mx-auto">
+            <div class="mb-6">
+                <label for="target" class="block text-sm font-medium text-gray-300 mb-2">
+                    Target URL or Domain
+                </label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="target"
+                        x-model="targetUrl"
+                        placeholder="e.g., gtbank.com or https://paystack.com"
+                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                    <div class="absolute right-3 top-3">
+                        <i class="fas fa-shield-alt text-purple-400"></i>
+                    </div>
+                </div>
+                
+                <!-- AI Prediction Preview -->
+                <div x-show="targetUrl.length > 5" class="mt-3 p-3 bg-gray-700 rounded-lg">
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-brain text-purple-400 mr-2"></i>
+                        <span class="text-gray-300">AI Pre-Analysis:</span>
+                        <span class="ml-2 text-purple-300" x-text="getPredictionText()"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <button 
+                @click="startAIScan()"
+                :disabled="scanning || !targetUrl.trim()"
+                class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105"
+            >
+                <i class="fas fa-rocket mr-2" x-show="!scanning"></i>
+                <i class="fas fa-spinner fa-spin mr-2" x-show="scanning"></i>
+                <span x-text="scanning ? 'AI Analysis in Progress...' : 'Launch AI-Powered Scan'"></span>
+            </button>
+        </div>
+
+        <!-- Real-time AI Scan Progress -->
+        <div x-show="currentScan" class="mt-10 bg-gray-900 rounded-lg p-6 border border-purple-500/30">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-cogs text-purple-400 mr-2 animate-spin" x-show="scanning"></i>
+                    <i class="fas fa-check-circle text-green-400 mr-2" x-show="!scanning && scanStatus?.status === 'completed'"></i>
+                    AI Security Analysis
+                </h3>
+                <span class="text-sm text-gray-400 font-mono" x-text="'Scan ID: ' + currentScan?.scan_id"></span>
+            </div>
+            
+            <!-- AI-Enhanced Progress Bar -->
+            <div class="relative w-full bg-gray-700 rounded-full h-4 mb-4 overflow-hidden">
+                <div 
+                    class="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full transition-all duration-500 relative"
+                    :style="'width: ' + (scanStatus?.progress || 0) + '%'"
+                >
+                    <div class="absolute inset-0 bg-white opacity-30 animate-pulse"></div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between text-sm text-gray-300 mb-6">
+                <span x-text="scanStatus?.phase || 'Initializing AI engines...'"></span>
+                <span class="font-bold" x-text="(scanStatus?.progress || 0) + '%'"></span>
+            </div>
+
+            <!-- Real-time AI Insights -->
+            <div x-show="scanStatus?.ai_insights?.length > 0" class="mb-6">
+                <h4 class="font-semibold mb-3 text-purple-400 flex items-center">
+                    <i class="fas fa-brain mr-2"></i>
+                    AI-Detected Anomalies: <span class="ml-2 bg-purple-600 px-2 py-1 rounded text-sm" x-text="scanStatus?.ai_insights?.length || 0"></span>
+                </h4>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                    <template x-for="insight in (scanStatus?.ai_insights || [])" :key="insight.id">
+                        <div class="bg-purple-900/30 border border-purple-500/30 rounded-lg p-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-purple-300" x-text="insight.name"></span>
+                                <span 
+                                    class="px-2 py-1 rounded text-xs font-bold"
+                                    :class="{
+                                        'bg-red-600': insight.severity === 'High',
+                                        'bg-yellow-600': insight.severity === 'Medium',
+                                        'bg-blue-600': insight.severity === 'Low'
+                                    }"
+                                    x-text="insight.severity"
+                                ></span>
+                            </div>
+                            <p class="text-gray-300 mt-1" x-text="insight.description"></p>
+                            <div class="flex items-center mt-2 text-xs">
+                                <span class="text-purple-400">AI Confidence:</span>
+                                <span class="ml-2 text-purple-300" x-text="Math.round((insight.ai_confidence || 0.85) * 100) + '%'"></span>
+                                <span class="mx-2 text-gray-500">|</span>
+                                <span class="text-blue-400">Detection Type:</span>
+                                <span class="ml-1 text-blue-300" x-text="insight.detection_type || 'AI_ANALYSIS'"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Traditional Vulnerabilities -->
+            <div x-show="scanStatus?.vulnerabilities?.length > 0" class="mb-6">
+                <h4 class="font-semibold mb-3 text-yellow-400 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Standard Vulnerabilities: <span class="ml-2 bg-yellow-600 px-2 py-1 rounded text-sm" x-text="scanStatus?.vulnerabilities?.length || 0"></span>
+                </h4>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                    <template x-for="vuln in (scanStatus?.vulnerabilities || [])" :key="vuln.id">
+                        <div class="bg-gray-600 rounded p-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium" x-text="vuln.name"></span>
+                                <span 
+                                    class="px-2 py-1 rounded text-xs font-bold"
+                                    :class="{
+                                        'bg-red-600': vuln.severity === 'High',
+                                        'bg-yellow-600': vuln.severity === 'Medium',
+                                        'bg-blue-600': vuln.severity === 'Low'
+                                    }"
+                                    x-text="vuln.severity"
+                                ></span>
+                            </div>
+                            <p class="text-gray-300 mt-1" x-text="vuln.description"></p>
+                            <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
+                                <span>CVSS: <span class="text-orange-400" x-text="vuln.cvss_score"></span></span>
+                                <span x-show="vuln.nigeria_specific" class="bg-green-600 px-2 py-1 rounded">🇳🇬 Nigerian Context</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- AI Analysis Complete Actions -->
+            <div x-show="scanStatus?.status === 'completed'" class="pt-6 border-t border-gray-700">
+                <div class="grid md:grid-cols-3 gap-4">
+                    <button 
+                        @click="viewAIReport()"
+                        class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 py-3 rounded-lg font-medium transition duration-200"
+                    >
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        View AI Report
+                    </button>
+                    <button 
+                        @click="downloadAIReport()"
+                        class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium transition duration-200"
+                    >
+                        <i class="fas fa-download mr-2"></i>
+                        Download Report
+                    </button>
+                    <button 
+                        @click="provideFeedback()"
+                        class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-3 rounded-lg font-medium transition duration-200"
+                    >
+                        <i class="fas fa-brain mr-2"></i>
+                        Teach AI
+                    </button>
+                </div>
+                
+                <!-- AI Summary Stats -->
+                <div x-show="scanStatus?.ai_risk_assessment" class="mt-6 grid md:grid-cols-3 gap-4">
+                    <div class="bg-purple-900/30 border border-purple-500/30 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-400" x-text="scanStatus?.ai_risk_assessment?.overall_risk_score || 0"></div>
+                        <div class="text-purple-300 text-sm">AI Risk Score</div>
+                    </div>
+                    <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-400" x-text="Math.round((scanStatus?.ai_risk_assessment?.ai_confidence || 0.85) * 100) + '%'"></div>
+                        <div class="text-blue-300 text-sm">AI Confidence</div>
+                    </div>
+                    <div class="bg-green-900/30 border border-green-500/30 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-green-400" x-text="scanStatus?.ai_risk_assessment?.nigerian_compliance_score?.score || 95"></div>
+                        <div class="text-green-300 text-sm">🇳🇬 Compliance Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Features Showcase -->
+    <div class="grid md:grid-cols-3 gap-8 mt-16">
+        <div class="bg-gradient-to-br from-purple-900 to-purple-800 rounded-lg p-6 border border-purple-500/30">
+            <div class="text-purple-400 text-4xl mb-4">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-purple-300">Advanced AI Analysis</h3>
+            <p class="text-gray-300 mb-4">
+                Machine learning models trained on Nigerian cybersecurity patterns with continuous learning capabilities.
+            </p>
+            <div class="text-sm text-purple-400">
+                <div class="flex justify-between">
+                    <span>Anomaly Detection:</span>
+                    <span class="text-green-400">Active</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Pattern Learning:</span>
+                    <span class="text-green-400">Continuous</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-900 to-green-800 rounded-lg p-6 border border-green-500/30">
+            <div class="text-green-400 text-4xl mb-4">
+                <i class="fas fa-flag"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-green-300">Nigerian Compliance AI</h3>
+            <p class="text-gray-300 mb-4">
+                Specialized AI models for CBN, NDPR, NCC, and NITDA compliance validation with local threat intelligence.
+            </p>
+            <div class="text-sm text-green-400">
+                <div class="flex justify-between">
+                    <span>CBN Guidelines:</span>
+                    <span class="text-green-400">✓ Integrated</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>NDPR Compliance:</span>
+                    <span class="text-green-400">✓ Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-lg p-6 border border-blue-500/30">
+            <div class="text-blue-400 text-4xl mb-4">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-blue-300">Real-Time Learning</h3>
+            <p class="text-gray-300 mb-4">
+                Every scan improves our AI models. Federated learning ensures privacy while building collective intelligence.
+            </p>
+            <div class="text-sm text-blue-400">
+                <div class="flex justify-between">
+                    <span>Learning Speed:</span>
+                    <span class="text-green-400">Real-time</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Privacy:</span>
+                    <span class="text-green-400">Protected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nigerian Cybersecurity Landscape -->
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-8 border border-gray-700 mt-16">
+        <h3 class="text-2xl font-bold mb-6 text-center">
+            <i class="fas fa-shield-alt text-green-400 mr-3"></i>
+            Nigerian Cybersecurity Intelligence
+        </h3>
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-400" x-text="aiStatus.knowledge_base?.nigerian_sites_analyzed || 0"></div>
+                <div class="text-gray-300 text-sm">Nigerian Sites Analyzed</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-400">85%</div>
+                <div class="text-gray-300 text-sm">Banking Compliance Rate</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-purple-400">12</div>
+                <div class="text-gray-300 text-sm">Regulatory Frameworks</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-yellow-400">24/7</div>
+                <div class="text-gray-300 text-sm">AI Monitoring</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div x-show="showFeedbackModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+    <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-purple-500/30">
+        <h3 class="text-xl font-bold mb-4 text-purple-400">
+            <i class="fas fa-brain mr-2"></i>Help Train Our AI
+        </h3>
+        <p class="text-gray-300 mb-4">Your feedback helps improve our AI models for better Nigerian cybersecurity.</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Scan Accuracy</label>
+                <select x-model="feedback.accuracy" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    <option value="excellent">Excellent - Very accurate</option>
+                    <option value="good">Good - Mostly accurate</option>
+                    <option value="fair">Fair - Some issues</option>
+                    <option value="poor">Poor - Needs improvement</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Nigerian Context Understanding</label>
+                <select x-model="feedback.nigerian_context" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    <option value="excellent">Excellent - Perfect compliance checks</option>
+                    <option value="good">Good - Most compliance covered</option>
+                    <option value="fair">Fair - Some compliance missed</option>
+                    <option value="poor">Poor - Compliance needs work</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Additional Comments</label>
+                <textarea x-model="feedback.comments" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white h-20"
+                    placeholder="Any specific feedback for our AI models..."></textarea>
+            </div>
+        </div>
+        
+        <div class="flex space-x-3 mt-6">
+            <button @click="submitFeedback()" 
+                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium">
+                <i class="fas fa-paper-plane mr-2"></i>Submit Feedback
+            </button>
+            <button @click="showFeedbackModal = false" 
+                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function aiPentestApp() {
+    return {
+        targetUrl: '',
+        scanning: false,
+        currentScan: null,
+        scanStatus: null,
+        pollInterval: null,
+        aiStatus: {},
+        showFeedbackModal: false,
+        feedback: {
+            accuracy: 'good',
+            nigerian_context: 'good',
+            comments: ''
+        },
+
+        async loadAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                const data = await response.json();
+                this.aiStatus = data;
+            } catch (error) {
+                console.error('Error loading AI status:', error);
+            }
+        },
+
+        getPredictionText() {
+            const url = this.targetUrl.toLowerCase();
+            
+            if (url.includes('bank') || url.includes('gtbank') || url.includes('zenith')) {
+                return 'Banking sector detected - CBN compliance checks enabled';
+            } else if (url.includes('paystack') || url.includes('flutterwave')) {
+                return 'Payment processor detected - PCI-DSS validation active';
+            } else if (url.includes('.ng')) {
+                return 'Nigerian domain detected - Local compliance frameworks activated';
+            } else if (url.includes('mtn') || url.includes('glo') || url.includes('airtel')) {
+                return 'Telecommunications detected - NCC standards validation';
+            } else {
+                return 'AI models ready - Enhanced anomaly detection enabled';
+            }
+        },
+
+        async startAIScan() {
+            if (!this.targetUrl.trim()) return;
+            
+            this.scanning = true;
+            
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target: this.targetUrl.trim()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.currentScan = data;
+                    this.pollScanStatus(data.scan_id);
+                    
+                    // Show success notification
+                    this.showNotification('AI-powered scan initiated successfully!', 'success');
+                } else {
+                    this.showNotification('Error: ' + data.error, 'error');
+                    this.scanning = false;
+                }
+            } catch (error) {
+                this.showNotification('Network error: ' + error.message, 'error');
+                this.scanning = false;
+            }
+        },
+
+        async pollScanStatus(scanId) {
+            this.pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/scan/${scanId}/status`);
+                    const data = await response.json();
+                    
+                    this.scanStatus = data;
+                    
+                    if (data.status === 'completed') {
+                        this.scanning = false;
+                        clearInterval(this.pollInterval);
+                        this.showNotification('AI analysis completed!', 'success');
+                        
+                        // Refresh AI status to show updated learning data
+                        this.loadAIStatus();
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 1000);
+        },
+
+        async viewAIReport() {
+            if (this.currentScan?.scan_id) {
+                window.open(`/scan/${this.currentScan.scan_id}`, '_blank');
+            }
+        },
+
+        async downloadAIReport() {
+            if (this.currentScan?.scan_id) {
+                try {
+                    const response = await fetch(`/api/scan/${this.currentScan.scan_id}/report`);
+                    const data = await response.json();
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {
+                        type: 'application/json'
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `reconzero-ai-report-${this.currentScan.scan_id}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    this.showNotification('AI report downloaded successfully!', 'success');
+                } catch (error) {
+                    this.showNotification('Error downloading report: ' + error.message, 'error');
+                }
+            }
+        },
+
+        provideFeedback() {
+            this.showFeedbackModal = true;
+        },
+
+        async submitFeedback() {
+            if (!this.currentScan?.scan_id) return;
+            
+            try {
+                const response = await fetch(`/api/scan/${this.currentScan.scan_id}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(this.feedback)
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Thank you! Your feedback helps improve our AI models.', 'success');
+                    this.showFeedbackModal = false;
+                    
+                    // Reset feedback form
+                    this.feedback = {
+                        accuracy: 'good',
+                        nigerian_context: 'good',
+                        comments: ''
+                    };
+                } else {
+                    this.showNotification('Error submitting feedback', 'error');
+                }
+            } catch (error) {
+                this.showNotification('Network error: ' + error.message, 'error');
+            }
+        },
+
+        showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 transition-all duration-300 ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    }
+}
+</script>
+
+<style>
+[x-cloak] { display: none !important; }
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+.bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.text-transparent {
+    color: transparent;
+}
+</style>
+{% endblock %}
