@@ -1830,6 +1830,27 @@ def bad_request(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    
+    print("🚀 Starting ReConZero (RCZ AI)")
+    print("🧠 AI-powered vulnerability detection enabled")
+    print("🇳🇬 Nigerian cybersecurity compliance checking active")
+    print(f"🌐 Server running on port {port}")
+    print("⚠️  Use responsibly - only test systems you own or have permission to test")
+    
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    port = int(os.environ.get('PORT', 8000))
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    
+    print("🚀 Starting ReConZero (RCZ AI)")
+    print("🧠 AI-powered vulnerability detection enabled")
+    print("🇳🇬 Nigerian cybersecurity compliance checking active")
+    print(f"🌐 Server running on port {port}")
+    print("⚠️  Use responsibly - only test systems you own or have permission to test")
+    
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+
+    port = int(os.environ.get('PORT', 8000))
     print("🚀 Starting ReConZero (RCZ AI) AI-Enhanced Prototype")
     print("🧠 AI-powered vulnerability detection enabled")
     print("🇳🇬 Nigerian cybersecurity compliance checking active")
@@ -1837,3 +1858,5 @@ if __name__ == '__main__':
     print(f"🌐 Server running on port {port}")
     print("⚠️  Use responsibly - only test systems you own or have permission to test")
     app.run(host='0.0.0.0', port=port, debug=False)
+
+    application = app
