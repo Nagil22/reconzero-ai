@@ -200,7 +200,14 @@
                         class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium transition duration-200"
                     >
                         <i class="fas fa-download mr-2"></i>
-                        Download Report
+                        Download DATA(JSON)
+                    </button>
+                    <button 
+                        @click="downloadPDFReport()"
+                        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-3 rounded-lg font-medium transition duration-200"
+                    >
+                        <i class="fas fa-file-pdf mr-2"></i>
+                        PDF Report
                     </button>
                     <button 
                         @click="provideFeedback()"
@@ -498,6 +505,29 @@ function aiPentestApp() {
                 }
             }
         },
+        async downloadPDFReport(scanId) {
+    try {
+        const response = await fetch(`/api/scan/${scanId || this.currentScan?.scan_id}/report/pdf`);
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reconzero-ai-report-${scanId || this.currentScan?.scan_id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('PDF report downloaded successfully!', 'success');
+        } else {
+            this.showNotification('Error generating PDF report', 'error');
+        }
+    } catch (error) {
+        this.showNotification('Error downloading PDF: ' + error.message, 'error');
+    }
+},
 
         provideFeedback() {
             this.showFeedbackModal = true;

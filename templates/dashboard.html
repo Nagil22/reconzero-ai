@@ -240,11 +240,18 @@
                                         <i class="fas fa-eye mr-1"></i>View
                                     </button>
                                     <button 
+                                        @click="downloadPDFReport(scan.scan_id)"
+                                        x-show="scan.status === 'completed'"
+                                        class="text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                        <i class="fas fa-file-pdf mr-1"></i>PDF
+                                    </button>
+                                    <button 
                                         @click="downloadAIReport(scan.scan_id)"
                                         x-show="scan.status === 'completed'"
                                         class="text-green-400 hover:text-green-300 px-2 py-1 rounded hover:bg-gray-600"
                                     >
-                                        <i class="fas fa-download mr-1"></i>Report
+                                        <i class="fas fa-download mr-1"></i>Report(JSON)
                                     </button>
                                     <button 
                                         @click="provideFeedback(scan.scan_id)"
@@ -455,6 +462,8 @@ function aiDashboardApp() {
             }
         },
 
+        
+
         provideFeedback(scanId) {
             this.selectedScanId = scanId;
             this.showFeedbackModal = true;
@@ -494,6 +503,30 @@ function aiDashboardApp() {
                 this.showNotification('Network error: ' + error.message, 'error');
             }
         },
+
+        async downloadPDFReport(scanId) {
+    try {
+        const response = await fetch(`/api/scan/${scanId || this.currentScan?.scan_id}/report/pdf`);
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reconzero-ai-report-${scanId || this.currentScan?.scan_id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('PDF report downloaded successfully!', 'success');
+        } else {
+            this.showNotification('Error generating PDF report', 'error');
+        }
+    } catch (error) {
+        this.showNotification('Error downloading PDF: ' + error.message, 'error');
+    }
+},
 
         async refreshScans() {
             this.showNotification('Refreshing scan data...', 'info');

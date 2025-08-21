@@ -4,7 +4,7 @@ ReConZero (RCZ AI) - AI-Enhanced Penetration Testing Platform
 A truly AI-powered penetration testing platform with continuous learning
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response 
 import os
 import json
 import time
@@ -21,6 +21,17 @@ import ipaddress
 import hashlib
 import base64
 from collections import defaultdict, Counter
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from io import BytesIO
+    PDF_AVAILABLE = True
+except ImportError:
+    print("PDF libraries not available - PDF reports disabled")
+    PDF_AVAILABLE = False
 # AI/ML imports with fallbacks
 try:
     import numpy as np
@@ -1814,6 +1825,176 @@ def health_check():
         "total_scans": len(scan_results),
         "timestamp": datetime.now().isoformat()
     })
+
+@app.route('/api/scan/<scan_id>/report/pdf')
+def download_pdf_report(scan_id):
+    """Generate and download PDF report"""
+    if scan_id not in scan_results:
+        return jsonify({"error": "Scan not found"}), 404
+    
+    result = scan_results[scan_id]
+    if result["status"] != "completed":
+        return jsonify({"error": "Scan not completed yet"}), 400
+    
+    # Generate report data
+    report_data = _generate_report_data(scan_id)
+    
+    # Generate PDF
+    pdf_buffer = _generate_pdf_report(report_data)
+    
+    # Create response
+    response = make_response(pdf_buffer.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=reconzero-ai-report-{scan_id}.pdf'
+    
+    return response
+
+def _generate_report_data(scan_id):
+    """Extract report data (reuse existing logic)"""
+    result = scan_results[scan_id]
+    vulnerabilities = result["vulnerabilities"]
+    ai_insights = result.get("ai_insights", [])
+    ai_assessment = result.get("ai_risk_assessment", {})
+    
+    return {
+        "scan_id": scan_id,
+        "target": result["target"],
+        "scan_date": result["started_at"],
+        "vulnerabilities": vulnerabilities,
+        "ai_insights": ai_insights,
+        "ai_assessment": ai_assessment,
+        "total_vulns": len(vulnerabilities),
+        "high_severity": len([v for v in vulnerabilities if v["severity"] == "High"]),
+        "medium_severity": len([v for v in vulnerabilities if v["severity"] == "Medium"]),
+        "low_severity": len([v for v in vulnerabilities if v["severity"] == "Low"]),
+        "ai_detected": len(ai_insights)
+    }
+
+def _generate_pdf_report(report_data):
+    """Generate professional PDF report"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.75*inch)
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        textColor=colors.HexColor('#1f2937'),
+        alignment=1  # Center
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        textColor=colors.HexColor('#374151')
+    )
+    
+    # Content
+    content = []
+    
+    # Title Page
+    content.append(Paragraph("ReConZero AI Security Assessment Report", title_style))
+    content.append(Spacer(1, 0.3*inch))
+    
+    # Executive Summary
+    content.append(Paragraph("Executive Summary", heading_style))
+    
+    exec_data = [
+        ["Target", report_data["target"]],
+        ["Scan Date", report_data["scan_date"][:10]],
+        ["Total Vulnerabilities", str(report_data["total_vulns"])],
+        ["High Severity", str(report_data["high_severity"])],
+        ["Medium Severity", str(report_data["medium_severity"])],
+        ["Low Severity", str(report_data["low_severity"])],
+        ["AI-Detected Issues", str(report_data["ai_detected"])],
+    ]
+    
+    exec_table = Table(exec_data, colWidths=[2*inch, 3*inch])
+    exec_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f3f4f6')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    content.append(exec_table)
+    content.append(Spacer(1, 0.3*inch))
+    
+    # AI Risk Assessment
+    if report_data.get("ai_assessment"):
+        content.append(Paragraph("AI Risk Assessment", heading_style))
+        ai_data = [
+            ["Overall Risk Score", f"{report_data['ai_assessment'].get('overall_risk_score', 0)}/100"],
+            ["Risk Level", report_data['ai_assessment'].get('risk_level', 'Unknown')],
+            ["AI Confidence", f"{int(report_data['ai_assessment'].get('ai_confidence', 0.85) * 100)}%"],
+        ]
+        
+        ai_table = Table(ai_data, colWidths=[2.5*inch, 2.5*inch])
+        ai_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#ddd6fe')),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 11),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        
+        content.append(ai_table)
+        content.append(Spacer(1, 0.3*inch))
+    
+    # Vulnerabilities Details
+    if report_data["vulnerabilities"]:
+        content.append(Paragraph("Vulnerability Details", heading_style))
+        
+        vuln_data = [["Name", "Severity", "CVSS", "Location"]]
+        
+        for vuln in report_data["vulnerabilities"][:20]:  # Limit to first 20
+            vuln_data.append([
+                vuln.get("name", "Unknown")[:40],
+                vuln.get("severity", "Unknown"),
+                str(vuln.get("cvss_score", "N/A")),
+                vuln.get("location", "Unknown")[:30]
+            ])
+        
+        vuln_table = Table(vuln_data, colWidths=[2.2*inch, 0.8*inch, 0.6*inch, 2.4*inch])
+        vuln_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#374151')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9fafb')]),
+        ]))
+        
+        # Color code severity
+        for i, vuln in enumerate(report_data["vulnerabilities"][:20], 1):
+            severity = vuln.get("severity", "").lower()
+            if severity == "high":
+                vuln_table.setStyle(TableStyle([('BACKGROUND', (1, i), (1, i), colors.HexColor('#fee2e2'))]))
+            elif severity == "medium":
+                vuln_table.setStyle(TableStyle([('BACKGROUND', (1, i), (1, i), colors.HexColor('#fef3c7'))]))
+            elif severity == "low":
+                vuln_table.setStyle(TableStyle([('BACKGROUND', (1, i), (1, i), colors.HexColor('#dbeafe'))]))
+        
+        content.append(vuln_table)
+    
+    # Footer
+    content.append(Spacer(1, 0.5*inch))
+    content.append(Paragraph(f"Generated by ReConZero AI | Scan ID: {report_data['scan_id']}", styles['Normal']))
+    
+    # Build PDF
+    doc.build(content)
+    buffer.seek(0)
+    return buffer
 
 # Error handlers
 @app.errorhandler(404)
