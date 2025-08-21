@@ -1,0 +1,7 @@
+# Build constraints to prevent setuptools issues
+setuptools>=75.0.0,!=72.0.0
+wheel>=0.40.0
+pip>=23.0.0
+
+# Force binary wheels to avoid compilation
+--only-binary=:all:
